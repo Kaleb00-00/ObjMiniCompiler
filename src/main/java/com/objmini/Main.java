@@ -1,4 +1,3 @@
-
 package com.objmini;
 
 import org.antlr.v4.runtime.*;
@@ -7,35 +6,36 @@ import org.antlr.v4.runtime.tree.*;
 public class Main {
     public static void main(String[] args) {
         try {
-            // 1. A sample string of ObjMini code to test our parser
+            // Sample ObjMini code testing inheritance and dispatch [cite: 77, 81]
             String inputCode = 
                 "class Animal { " +
                 "  public int age; " +
-                "  public void eat() { age = 5; } " +
+                "  public void speak() { } " +
                 "} " +
                 "class Dog extends Animal { " +
+                "  public void speak() { } " + // Overriding [cite: 81]
                 "  public void bark() { } " +
                 "}";
 
-            // 2. Feed the code to the Lexer
+            // Phase 1: Lexing and Parsing [cite: 84]
             ObjMiniLexer lexer = new ObjMiniLexer(CharStreams.fromString(inputCode));
-            
-            // 3. Get the stream of tokens
             CommonTokenStream tokens = new CommonTokenStream(lexer);
-            
-            // 4. Feed the tokens to the Parser
             ObjMiniParser parser = new ObjMiniParser(tokens);
-            
-            // 5. Start parsing at the 'program' rule
             ParseTree tree = parser.program();
 
-            // 6. Print the LISP-style tree to the console to verify it works
-            System.out.println("--- Parse Tree Success ---");
-            System.out.println(tree.toStringTree(parser));
-            
+            // Phase 2: Semantic Analysis & VTable Construction 
+            System.out.println("--- Phase 2: Semantic Analysis & VTable ---");
+            SemanticAnalyzer analyzer = new SemanticAnalyzer();
+            analyzer.visit(tree);
+            analyzer.printClassReports();
+
+            // Phase 3: Code Generation [cite: 88]
+            System.out.println("\n--- Phase 3: Code Generation ---");
+            CodeGenerator codegen = new CodeGenerator(analyzer.getClassTable());
+            codegen.visit(tree);
+
         } catch (Exception e) {
-            System.err.println("Error while parsing: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Compiler Error: " + e.getMessage());
         }
     }
 }
